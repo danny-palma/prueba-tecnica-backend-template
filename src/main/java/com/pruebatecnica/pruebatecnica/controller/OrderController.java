@@ -14,35 +14,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    
+
     @Autowired
     private OrderService orderService;
-    
+
     @PostMapping
     public ResponseEntity<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        try {
-            Order order = orderService.createOrder(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(order);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        Order order = orderService.createOrder(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrder(@PathVariable Long id) {
-        try {
-            Order order = orderService.getOrderById(id);
-            return ResponseEntity.ok(order);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(orderService.getOrderById(id));
     }
-    
+
     @GetMapping
     public ResponseEntity<List<Order>> getAllOrders() {
-        List<Order> orders = orderService.getAllOrders();
-        return ResponseEntity.ok(orders);
+        return ResponseEntity.ok(orderService.getAllOrders());
     }
 }

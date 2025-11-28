@@ -33,11 +33,11 @@ La plantilla de prueba técnica está LISTA para ser usada. Incluye:
 - **Pull Request:** 
 
 ## Checklist de Entrega
-- [ ] Refactorización del método `createOrder()`
-- [ ] Implementación del descuento por variedad
-- [ ] Tests unitarios para la lógica de descuento
-- [ ] Archivo RESPUESTAS.md completado
-- [ ] README.md actualizado con decisiones de diseño
+- [x] Refactorización del método `createOrder()`
+- [x] Implementación del descuento por variedad
+- [x] Tests unitarios para la lógica de descuento
+- [x] Archivo RESPUESTAS.md completado
+- [x] README.md actualizado con decisiones de diseño
 
 ## Observaciones Adicionales
 (Comentarios opcionales del candidato)
