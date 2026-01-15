@@ -149,6 +149,57 @@ GET http://localhost:8080/api/orders
 
 ---
 
+## 📝 Decisiones de Diseño (Mi Implementación)
+
+### Patrón aplicado: Separación de Responsabilidades (SRP)
+
+Refactoricé el método `createOrder()` que originalmente hacía todo (validación, cálculos, persistencia) en componentes especializados:
+
+| Componente | Responsabilidad |
+|------------|-----------------|
+| `OrderInputValidator` | Valida datos de entrada (cliente, items) |
+| `StockValidator` | Verifica disponibilidad de inventario |
+| `PriceCalculator` | Calcula subtotales de items |
+| `DiscountService` | Aplica reglas de descuento |
+
+### Estructura de paquetes
+
+```
+service/
+├── OrderService.java          # Orquestador principal
+├── pricing/
+│   ├── PriceCalculator.java   # Cálculo de precios
+│   └── DiscountService.java   # Lógica de descuentos
+└── validation/
+    ├── OrderInputValidator.java  # Validación de entrada
+    └── StockValidator.java       # Validación de stock
+```
+
+### ¿Por qué esta estructura?
+
+1. **Legibilidad**: El método `createOrder()` ahora se lee como un flujo de negocio:
+   ```java
+   inputValidator.validate(request);
+   Order order = createOrderFromRequest(request);
+   List<OrderItem> items = processOrderItems(request, order);
+   BigDecimal subtotal = priceCalculator.calculateOrderSubtotal(items);
+   BigDecimal total = discountService.applyDiscounts(subtotal, items);
+   ```
+
+2. **Testabilidad**: Cada componente se puede testear de forma aislada con mocks.
+
+3. **Extensibilidad**: Para agregar nuevos tipos de descuento, solo modifico `DiscountService`.
+
+4. **Single Responsibility**: Cada clase tiene una única razón para cambiar.
+
+### Implementación del Descuento "Variedad"
+
+La regla de negocio (>3 tipos de productos = 10% descuento) está en `DiscountService.applyDiscounts()`:
+- Cuenta productos únicos usando `Stream.distinct()` sobre los IDs de producto
+- Solo cuenta **tipos**, no cantidades
+
+---
+
 ## 🎯 Para el Candidato
 
 **Recuerda:** No se trata solo de hacer que funcione. Se evalúa:
