@@ -1,5 +1,6 @@
 package com.pruebatecnica.pruebatecnica.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ public class Order {
     private OrderStatus status;
     
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<OrderItem> items = new ArrayList<>();
     
     // Constructors
@@ -101,9 +103,12 @@ public class Order {
     public void setItems(List<OrderItem> items) {
         this.items = items;
     }
-    
+
     public void addItem(OrderItem item) {
-        items.add(item);
+        if (this.items == null) {
+            this.items = new ArrayList<>();
+        }
+        this.items.add(item);
         item.setOrder(this);
     }
 }

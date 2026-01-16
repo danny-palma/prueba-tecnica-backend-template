@@ -1,5 +1,6 @@
 package com.pruebatecnica.pruebatecnica.service;
 
+import com.pruebatecnica.pruebatecnica.exception.ProductNotFoundException;
 import com.pruebatecnica.pruebatecnica.model.Product;
 import com.pruebatecnica.pruebatecnica.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,10 @@ public class ProductService {
     
     @Autowired
     private ProductRepository productRepository;
-    
+
     public Product getProductById(Long productId) {
         return productRepository.findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException(productId));
     }
     
     public List<Product> getAllProducts() {

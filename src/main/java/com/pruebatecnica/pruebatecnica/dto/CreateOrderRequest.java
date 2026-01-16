@@ -1,5 +1,6 @@
 package com.pruebatecnica.pruebatecnica.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -15,6 +16,7 @@ public class CreateOrderRequest {
     private String customerEmail;
     
     @NotEmpty(message = "Order items are required")
+    @Valid
     private List<OrderItemRequest> items;
     
     // Constructors

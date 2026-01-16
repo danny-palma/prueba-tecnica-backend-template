@@ -20,14 +20,10 @@ public class ProductController {
         List<Product> products = productService.getAllProducts();
         return ResponseEntity.ok(products);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Long id) {
-        try {
-            Product product = productService.getProductById(id);
-            return ResponseEntity.ok(product);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Product product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
     }
 }

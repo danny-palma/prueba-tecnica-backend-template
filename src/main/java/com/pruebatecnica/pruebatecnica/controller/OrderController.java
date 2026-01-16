@@ -17,17 +17,13 @@ public class OrderController {
     
     @Autowired
     private OrderService orderService;
-    
+
+
     @PostMapping
-    public ResponseEntity<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        try {
-            Order order = orderService.createOrder(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(order);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+    public ResponseEntity<Order> createOrder(@RequestBody CreateOrderRequest request) {
+        // Deja que el servicio lance la excepción libremente
+        Order order = orderService.createOrder(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
     
     @GetMapping("/{id}")

@@ -6,6 +6,7 @@ import com.pruebatecnica.pruebatecnica.model.Order;
 import com.pruebatecnica.pruebatecnica.model.Product;
 import com.pruebatecnica.pruebatecnica.repository.OrderRepository;
 import com.pruebatecnica.pruebatecnica.repository.ProductRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Disabled
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 

@@ -1,5 +1,6 @@
 package com.pruebatecnica.pruebatecnica.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -13,6 +14,7 @@ public class OrderItem {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference
     private Order order;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,7 +37,7 @@ public class OrderItem {
         this.product = product;
         this.quantity = quantity;
         this.unitPrice = product.getPrice();
-        this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        calculateTotalPrice();
     }
     
     // Getters and Setters
@@ -85,5 +87,13 @@ public class OrderItem {
     
     public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public void calculateTotalPrice() {
+        if (this.unitPrice != null && this.quantity != null) {
+            this.totalPrice = this.unitPrice.multiply(new BigDecimal(this.quantity));
+        } else {
+            this.totalPrice = BigDecimal.ZERO;
+        }
     }
 }
