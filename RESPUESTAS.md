@@ -94,7 +94,7 @@ Esto ocasionaria que la aplicacion sea inusable por la lentitud o probablemente 
  - Eager lo utilizaria únicamente para relaciones muy pequeñas y estáticas donde tengo la certeza absoluta de que la tabla no crecerá, o crecerá muy poco y que el dato relacionado se requiere el 100% de las veces.
 ```
 
-**Mejores practicas para manejar LazyInitializationException y alternativas mejores!:**
+**Mejores prácticas para manejar LazyInitializationException y alternativas mejores:**
 ```
 Esta excepción ocurre cuando se intenta acceder a una relación marcada como LAZY (colección o entidad) después de que la Sesión de Hibernate o el Contexto de Persistencia se han cerrado.
 
@@ -127,15 +127,44 @@ Ejecutar la lógica de acceso dentro de un método @Transactional, lo que mantie
 
 ### Sobre el Refactoring Realizado
 ```
-[Opcional: Explica brevemente las decisiones más importantes que tomaste durante la refactorización]
+Las decisiones principales se centraron en la Separación de Responsabilidades (SRP). 
+Delegué la lógica de persistencia exclusivamente al repositorio y la lógica de negocio al servicio. 
+Implementé un Manejo Global de Excepciones para eliminar los bloques try-catch repetitivos en los controladores, logrando un código más limpio y legible. 
+Optimicé las consultas a la base de datos para asegurar que las operaciones de actualización de stock sean atómicas y consistentes
 ```
 
 ### Patrones de Diseño Aplicados
 ```
-[Opcional: Menciona qué patrones de diseño utilizaste y por qué]
+Utilicé los siguientes patrones para asegurar un diseño robusto:
+
+ - Repository Pattern: 
+ Para desacoplar la lógica de negocio de la tecnología de persistencia (JPA/Hibernate).
+
+ - Service Layer: 
+ Para centralizar la lógica de negocio y gestionar la transaccionalidad.
+
+ - Dependency Injection (DI): 
+ Implementado a través de Spring para facilitar el desacoplamiento y la testabilidad (unit testing con Mocks).
+
+ - Data Transfer Object (DTO): 
+ Para evitar exponer las entidades de la base de datos directamente a la API, protegiendo la integridad del modelo interno.
+ 
+ - Programación Orientada a Aspectos (AOP):
+ Con las excepciones globales, se capturaron errores para dar respuestas centralizadas y personalizadas al cliente.
 ```
 
 ### Posibles Mejoras Futuras
 ```
-[Opcional: ¿Qué otras mejoras implementarías si tuvieras más tiempo?]
+Implementaria las siguientes mejoras
+
+1. Seguridad: 
+Implementar OAuth2/JWT para proteger los endpoints y gestionar roles. 
+
+2. Caché Distribuido (Redis): 
+Es una tecnología que he manejado poco pero me interesa profundizar, especialmente para optimizar la consulta de productos de alta rotación y proteger la base de datos. 
+
+3. Observabilidad y Monitoreo
+Hasta ahora mi enfoque principal ha sido la lógica de desarrollo y la robustez del código. 
+Sin embargo, como mejora futura, me gustaría integrar sistemas de observabilidad y monitoreo utilizando herramientas como Prometheus y Grafana;
+ para analizar tiempo de respuesta de los endpoints y numero de conexiones activas en DB..
 ```
