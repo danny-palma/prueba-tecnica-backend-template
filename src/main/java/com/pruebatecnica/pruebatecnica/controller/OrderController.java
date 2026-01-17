@@ -3,7 +3,6 @@ package com.pruebatecnica.pruebatecnica.controller;
 import com.pruebatecnica.pruebatecnica.dto.CreateOrderRequest;
 import com.pruebatecnica.pruebatecnica.model.Order;
 import com.pruebatecnica.pruebatecnica.service.OrderService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +20,6 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Order> createOrder(@RequestBody CreateOrderRequest request) {
-        // Deja que el servicio lance la excepción libremente
         Order order = orderService.createOrder(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
