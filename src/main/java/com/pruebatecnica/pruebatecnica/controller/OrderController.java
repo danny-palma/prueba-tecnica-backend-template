@@ -26,12 +26,8 @@ public class OrderController {
     
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrder(@PathVariable Long id) {
-        try {
             Order order = orderService.getOrderById(id);
             return ResponseEntity.ok(order);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
     }
     
     @GetMapping

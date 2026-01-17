@@ -3,6 +3,7 @@ package com.pruebatecnica.pruebatecnica.service;
 import com.pruebatecnica.pruebatecnica.dto.CreateOrderRequest;
 import com.pruebatecnica.pruebatecnica.dto.OrderItemRequest;
 import com.pruebatecnica.pruebatecnica.exception.InsufficientStockException;
+import com.pruebatecnica.pruebatecnica.exception.OrderNotFoundException;
 import com.pruebatecnica.pruebatecnica.exception.ProductNotFoundException;
 import com.pruebatecnica.pruebatecnica.model.Order;
 import com.pruebatecnica.pruebatecnica.model.OrderItem;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -54,7 +56,7 @@ public class OrderService {
 
             subtotal = subtotal.add(orderItem.getTotalPrice());
         }
-        order.setTotalAmount(subtotal);
+        order.setTotalAmount(subtotal.setScale(2, RoundingMode.HALF_UP));
     }
 
     private void validateAndUpdateStock(Product product, int quantity) {
@@ -72,15 +74,19 @@ public class OrderService {
                 .count();
 
         if (uniqueProductTypes > 3) {
-            BigDecimal totalOriginal = order.getTotalAmount();
-            BigDecimal discount = totalOriginal.multiply(new BigDecimal("0.10"));
-            order.setTotalAmount(totalOriginal.subtract(discount));
+            BigDecimal originalTotal = order.getTotalAmount();
+            BigDecimal discountAmount = originalTotal.multiply(new BigDecimal("0.10"));
+
+            BigDecimal discountedTotal = originalTotal.subtract(discountAmount)
+                    .setScale(2, RoundingMode.HALF_UP);
+
+            order.setTotalAmount(discountedTotal);
         }
     }
 
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
     public List<Order> getAllOrders() {
