@@ -101,7 +101,7 @@ class OrderServiceTest {
         product2.setId(2L);
         Product product3 = new Product("Uva", BigDecimal.valueOf(10.00), 10);
         product3.setId(3L);
-        Product product4 = new Product("Sandía", BigDecimal.valueOf(10.00), 10);
+        Product product4 = new Product("Sandia", BigDecimal.valueOf(10.00), 10);
         product4.setId(4L);
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product1));

@@ -208,7 +208,8 @@ Considera estos puntos:
 
 [Opcional: ¿Qué otras mejoras implementarías si tuvieras más tiempo?]
 
-- SonarQube: Implementar `SonarQube` para mejorar la calidad del código, detectando duplicaciones y vulnerabilidades. **Actualmente existe un problema de compatibilidad entre el plugin de SonarQube y Gradle 9.2.1 (la API getConvention() fue eliminada), por lo que se requiere usar Gradle 8.x temporalmente hasta que se lance una versión compatible del plugin.**
+- SonarQube: Implementar `SonarQube` para mejorar la calidad del código, detectando duplicaciones y vulnerabilidades. 
+**Actualmente existe un problema de compatibilidad entre el plugin de SonarQube y Gradle 9.2.1 (la API getConvention() fue eliminada), por lo que se requiere usar Gradle 8.x temporalmente hasta que se lance una versión compatible del plugin.**
 - DTOs: Definir objetos de transferencia de datos específicos para cada endpoint, en lugar de exponer entidades directamente. Esto mejora la seguridad, el rendimiento y la claridad de la API. Sería útil confirmar qué campos exactos necesita el frontend en cada respuesta para diseñar los DTOs adecuados.
 - Paginación y Filtrado: Implementar `Pageable` de Spring Data en los endpoints de listado para manejar grandes volúmenes de datos de forma eficiente.
 - Seguridad (Spring Security + JWT): Implementar autenticación y roles para proteger los endpoints sensibles.
