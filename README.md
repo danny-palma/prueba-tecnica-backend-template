@@ -36,6 +36,18 @@ En lugar de construir todo desde cero, trabajarás sobre una base de código exi
 - ✅ Aplicación de descuentos
 - ✅ Persistencia en base de datos
 
+Durante el refactor intenté que el código quedara más claro, más fácil de leer y con responsabilidades mejor separadas. La idea principal fue que el método createOrder() dejara de hacer todo él solo y que cada parte del proceso tuviera su propio lugar.
+
+Primero, saqué la validación de stock a una clase aparte. Esto lo hice porque esa lógica era muy específica y hacía ruido dentro del servicio principal. Ahora queda más limpio y, si en un futuro cambian las reglas de stock, solo habría que tocar ese archivo.
+
+También separé todo lo relacionado con cálculos en una clase llamada OrderCalculator. Ahí se calcula el total y también se define cuánto se descuenta. Tener eso por fuera permite probar el cálculo sin necesidad de crear pedidos completos o simular repositorios.
+
+El descuento por variedad (cuando un pedido tiene más de tres tipos de productos) también lo puse en un componente independiente. Lo hice así porque esta regla puede cambiar o incluso crecer con otras condiciones, y prefiero que esté aislada para modificarla sin afectar lo demás.
+
+En general, la intención fue que el flujo del pedido se lea casi como una historia: validar datos, revisar stock, construir los ítems, calcular, aplicar descuentos y guardar. Eso hace que el código sea más fácil de seguir.
+
+Finalmente, los tests también quedaron más simples porque ahora cada parte tiene su propio archivo y su propia lógica bien delimitada. Así es más fácil probar solo lo que realmente importa sin tener mocks innecesarios.
+
 **Criterio:** El código resultante debe ser legible casi como lenguaje natural.
 
 ### Tarea 2: Implementar Regla de Negocio Compleja 📊
