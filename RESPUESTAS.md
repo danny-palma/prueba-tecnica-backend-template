@@ -202,7 +202,7 @@ Considera estos puntos:
 - Strategy Pattern: Aplicado en `DiscountService` para encapsular la lógica de descuentos (como el de Variedad), permitiendo agregar nuevas reglas sin afectar al resto del sistema.
 - Facade / Orchestrator: `OrderService` actúa como un orquestador de alto nivel que delega tareas complejas a componentes especializados, simplificando la interfaz para el controlador.
 - Dependency Injection (DI): Utilizado para desacoplar los servicios de sus implementaciones, facilitando el mantenimiento y las pruebas unitarias.
-- Data Transfer Object (DTO): Implementado para separar el modelo de dominio de los datos de entrada/salida de la API, protegiendo la integridad de la base de datos.
+- Data Transfer Object (DTO): Implementado para definir contratos estrictos en la entrada de datos (Requests), separando el modelo de dominio de la API pública.
 - Singleton: Patrón nativo de Spring utilizado para los servicios, asegurando eficiencia en el uso de memoria.
 
 
