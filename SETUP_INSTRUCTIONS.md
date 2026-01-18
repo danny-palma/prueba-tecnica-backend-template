@@ -26,11 +26,11 @@ La plantilla de prueba técnica está LISTA para ser usada. Incluye:
 - ✅ Plantilla de respuestas en RESPUESTAS.md
 
 ## Información del Candidato
-- **Nombre:** 
-- **Email:** 
-- **LinkedIn:** 
-- **Fork:** 
-- **Pull Request:** 
+- **Nombre:** Francisco Andres Sierra Soto
+- **Email:** fandres6262@gmail.com
+- **LinkedIn:** https://www.linkedin.com/in/francisco-andres-sierra-soto-96976b242/
+- **Fork:** prueba-tecnica-backend-plantilla
+- **Pull Request:** refactorización, mejora de creación de pedidos, manejo de errores.
 
 ## Checklist de Entrega
 - [x] Refactorización del método `createOrder()`
