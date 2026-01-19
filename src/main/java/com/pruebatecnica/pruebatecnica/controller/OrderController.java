@@ -11,13 +11,23 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controlador REST para la gestión de pedidos.
+ * Expone endpoints para crear y consultar órdenes.
+ */
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    
+
     @Autowired
     private OrderService orderService;
-    
+
+    /**
+     * Crea un nuevo pedido a partir de una solicitud.
+     *
+     * @param request DTO con los datos del pedido (cliente e ítems).
+     * @return ResponseEntity con el pedido creado y estado 201 (CREATED).
+     */
     @PostMapping
     public ResponseEntity<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
         try {
@@ -29,7 +39,13 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
-    
+
+    /**
+     * Busca un pedido específico por su ID.
+     *
+     * @param id ID del pedido a consultar.
+     * @return ResponseEntity con el pedido o estado 404 (NOT FOUND).
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrder(@PathVariable Long id) {
         try {
@@ -39,7 +55,12 @@ public class OrderController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
+    /**
+     * Lista todos los pedidos registrados.
+     *
+     * @return ResponseEntity con la lista de pedidos.
+     */
     @GetMapping
     public ResponseEntity<List<Order>> getAllOrders() {
         List<Order> orders = orderService.getAllOrders();
