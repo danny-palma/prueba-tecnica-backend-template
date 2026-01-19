@@ -1,0 +1,10 @@
+{
+  "customerName": "Test Con Descuento",
+  "customerEmail": "test@test.com", 
+  "items": [
+    {"productId": 1, "quantity": 1},
+    {"productId": 2, "quantity": 1},
+    {"productId": 3, "quantity": 1},
+    {"productId": 4, "quantity": 1}
+  ]
+}

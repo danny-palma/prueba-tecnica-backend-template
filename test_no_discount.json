@@ -1,0 +1,5 @@
+{
+  "customerName": "Test Sin Descuento",
+  "customerEmail": "test@test.com", 
+  "items": [{"productId": 1, "quantity": 10}]
+}

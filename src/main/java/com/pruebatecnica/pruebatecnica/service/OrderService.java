@@ -2,7 +2,6 @@ package com.pruebatecnica.pruebatecnica.service;
 
 import com.pruebatecnica.pruebatecnica.dto.CreateOrderRequest;
 import com.pruebatecnica.pruebatecnica.dto.OrderItemRequest;
-import com.pruebatecnica.pruebatecnica.exception.InsufficientStockException;
 import com.pruebatecnica.pruebatecnica.exception.ProductNotFoundException;
 import com.pruebatecnica.pruebatecnica.model.Order;
 import com.pruebatecnica.pruebatecnica.model.OrderItem;
@@ -10,15 +9,15 @@ import com.pruebatecnica.pruebatecnica.model.OrderStatus;
 import com.pruebatecnica.pruebatecnica.model.Product;
 import com.pruebatecnica.pruebatecnica.repository.OrderRepository;
 import com.pruebatecnica.pruebatecnica.repository.ProductRepository;
+import com.pruebatecnica.pruebatecnica.validation.OrderRequestValidator;
+import com.pruebatecnica.pruebatecnica.validation.StockValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class OrderService {
@@ -29,80 +28,76 @@ public class OrderService {
     @Autowired
     private ProductRepository productRepository;
     
-    /**
-     * NOTA IMPORTANTE: Este método viola varios principios SOLID intencionalmente.
-     * Los candidatos deben refactorizar este código para hacerlo más mantenible y testeable.
-     */
+    @Autowired
+    private OrderRequestValidator orderRequestValidator;
+    
+    @Autowired
+    private StockValidator stockValidator;
+    
+    @Autowired
+    private PricingService pricingService;
+    
+    @Autowired
+    private DiscountService discountService;
+    
     @Transactional
     public Order createOrder(CreateOrderRequest request) {
-        // TODO: Los candidatos deben refactorizar todo este método
+        orderRequestValidator.validate(request);
         
-        // Validaciones mezcladas con lógica de negocio
-        if (request.getCustomerName() == null || request.getCustomerName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Customer name is required");
-        }
-        if (request.getCustomerEmail() == null || request.getCustomerEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Customer email is required");
-        }
-        if (request.getItems() == null || request.getItems().isEmpty()) {
-            throw new IllegalArgumentException("Order items are required");
-        }
+        Order order = createOrderEntity(request);
+        List<OrderItem> orderItems = createOrderItems(request.getItems(), order);
+        List<Long> productIds = extractProductIds(request.getItems());
         
-        // Crear orden
-        Order order = new Order(request.getCustomerName(), request.getCustomerEmail());
-        List<OrderItem> orderItems = new ArrayList<>();
-        BigDecimal total = BigDecimal.ZERO;
-        Set<Long> uniqueProductIds = new HashSet<>();
+        BigDecimal subtotal = pricingService.calculateOrderTotal(orderItems);
+        BigDecimal discount = discountService.calculateDiscount(productIds, subtotal);
+        BigDecimal finalTotal = pricingService.applyDiscount(subtotal, discount);
         
-        // Procesamiento de items mezclado con validación de stock
-        for (OrderItemRequest itemRequest : request.getItems()) {
-            if (itemRequest.getProductId() == null) {
-                throw new IllegalArgumentException("Product ID is required");
-            }
-            if (itemRequest.getQuantity() == null || itemRequest.getQuantity() <= 0) {
-                throw new IllegalArgumentException("Quantity must be greater than 0");
-            }
-            
-            // Buscar producto
-            Product product = productRepository.findById(itemRequest.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException(itemRequest.getProductId()));
-            
-            // Validar stock (problema de concurrencia no resuelto)
-            if (product.getStock() < itemRequest.getQuantity()) {
-                throw new InsufficientStockException(product.getName(), itemRequest.getQuantity(), product.getStock());
-            }
-            
-            // Actualizar stock
-            product.setStock(product.getStock() - itemRequest.getQuantity());
-            productRepository.save(product);
-            
-            // Crear item de orden
-            OrderItem orderItem = new OrderItem(product, itemRequest.getQuantity());
-            orderItem.setOrder(order);
-            orderItems.add(orderItem);
-            
-            // Calcular subtotal
-            BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
-            total = total.add(itemTotal);
-            
-            // Trackear productos únicos para descuento
-            uniqueProductIds.add(product.getId());
-        }
-        
-        // Lógica del descuento "Variedad" mezclada con todo lo demás
-        // TODO: Los candidatos deben implementar y testear esta funcionalidad
-        // Regla: Si el pedido contiene más de 3 tipos de productos diferentes, 
-        // aplicar 10% de descuento al total
-        if (uniqueProductIds.size() > 3) {
-            BigDecimal discount = total.multiply(BigDecimal.valueOf(0.10));
-            total = total.subtract(discount);
-        }
-        
-        order.setItems(orderItems);
-        order.setTotalAmount(total);
-        order.setStatus(OrderStatus.CONFIRMED);
+        finalizeOrder(order, orderItems, finalTotal);
         
         return orderRepository.save(order);
+    }
+    
+    private Order createOrderEntity(CreateOrderRequest request) {
+        return new Order(request.getCustomerName(), request.getCustomerEmail());
+    }
+    
+    private List<OrderItem> createOrderItems(List<OrderItemRequest> itemRequests, Order order) {
+        List<OrderItem> orderItems = new ArrayList<>();
+        
+        for (OrderItemRequest itemRequest : itemRequests) {
+            Product product = findProductById(itemRequest.getProductId());
+            stockValidator.validateStockAvailability(product, itemRequest.getQuantity());
+            stockValidator.reserveStock(product, itemRequest.getQuantity());
+            productRepository.save(product);
+            
+            OrderItem orderItem = createOrderItem(product, itemRequest.getQuantity(), order);
+            orderItems.add(orderItem);
+        }
+        
+        return orderItems;
+    }
+    
+    private Product findProductById(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new ProductNotFoundException(productId));
+    }
+    
+    private OrderItem createOrderItem(Product product, Integer quantity, Order order) {
+        OrderItem orderItem = new OrderItem(product, quantity);
+        orderItem.setOrder(order);
+        return orderItem;
+    }
+    
+    private List<Long> extractProductIds(List<OrderItemRequest> itemRequests) {
+        return itemRequests.stream()
+            .map(OrderItemRequest::getProductId)
+            .toList();
+    }
+    
+    private void finalizeOrder(Order order, List<OrderItem> orderItems, BigDecimal totalAmount) {
+        order.setItems(orderItems);
+        order.setTotalAmount(totalAmount);
+        order.setStatus(OrderStatus.CONFIRMED);
     }
     
     public Order getOrderById(Long orderId) {

@@ -9,22 +9,9 @@ Es Black Friday y el sistema recibe 50 pedidos por segundo del iPhone 15 que sol
 ¿Qué mecanismo de base de datos o de Spring Boot utilizarías para asegurar que nunca se venda más stock del que existe, asumiendo múltiples instancias de la API corriendo en paralelo?
 
 ### Tu Respuesta
-```
-[Escribe aquí tu respuesta]
 
-Posibles enfoques a considerar:
-- Transacciones y niveles de aislamiento
-- Bloqueos (locks) en base de datos
-- Bloqueos optimistas vs pesimistas
-- Uso de @Version para Optimistic Locking
-- SELECT FOR UPDATE
-- Implementación de un sistema de colas
-- Otros mecanismos...
+Para resolver el problema de concurrencia en el escenario de Black Friday, implementaría bloqueo pesimista con SELECT FOR UPDATE en la consulta que verifica y actualiza el stock. Esto garantiza que solo una transacción pueda modificar el stock a la vez, evitando condiciones de carrera y asegurando que nunca se venda más stock del disponible. Esto funciona correctamente aunque existan  10, 50 o 100 instancias de la API, porque el control está en la base de datos, no en memoria.
 
-Explica cuál elegirías y por qué.
-```
-
----
 
 ## 2. Pregunta Trampa de Arquitectura 🎯
 
@@ -38,34 +25,42 @@ Configurar TODAS las relaciones JPA (`@OneToMany`, `@ManyToOne`) con `FetchType.
 ¿Aceptarías este Pull Request? ¿Por qué sí o por qué no? ¿Qué impacto tendría con millones de registros?
 
 ### Tu Respuesta
-```
-[Escribe aquí tu respuesta]
 
-Considera estos puntos:
-- Problema N+1 vs Carga excesiva de memoria
-- Impacto en el rendimiento con grandes volúmenes de datos
-- Alternativas mejores (DTO projection, fetch joins específicos, etc.)
-- Cuándo usar EAGER vs LAZY
-- Mejores prácticas para manejar LazyInitializationException
+No lo aceptaria porque EAGER no envia el N+1, solamente lo disimula a costa de trasferir datos innecesarrios, con millones de registros la aplicaci´pn se volveria lenta y pesada por consumo de memoria. Es mejor usar Fetch Joins especificos para cargar exactamente lo que necesitamos. 
 
-¿Aceptarías la propuesta? ¿Qué alternativas sugerirías?
-```
-
----
 
 ## 3. Reflexiones Adicionales (Opcional) 💭
 
 ### Sobre el Refactoring Realizado
 ```
-[Opcional: Explica brevemente las decisiones más importantes que tomaste durante la refactorización]
+La decisión más importante fue separar las responsabilidades en clases cohesivas en lugar de simplemente dividir el método en partes más pequeñas. Esto permitió:
+1. Testing aislado: Cada validador/service se prueba independientemente
+2. Reutilización: StockValidator puede usarse en otros contextos
+3. Mantenimiento: Cambiar la lógica de descuento requiere solo modificar DiscountService
+4. Legibilidad: El método createOrder() ahora lee como lenguaje natural
 ```
 
 ### Patrones de Diseño Aplicados
 ```
-[Opcional: Menciona qué patrones de diseño utilizaste y por qué]
+1. Strategy Pattern - Para descuentos:
+   - DiscountStrategy interface permite agregar nuevos tipos de descuentos sin modificar código existente
+   - VarietyDiscountStrategy encapsula la lógica específica
+2. Template Method implícito en OrderService:
+   - El flujo principal está definido pero cada paso es delegado a componentes específicos
+   - Permite variar implementaciones individuales
+3. Dependency Injection:
+   - Todas las dependencias se inyectan, facilitando testing y modularidad
 ```
 
 ### Posibles Mejoras Futuras
 ```
-[Opcional: ¿Qué otras mejoras implementarías si tuvieras más tiempo?]
+1. Resolución del Problema de Concurrencia:
+   - Implementar bloqueo pesimista con @Lock(LockModeType.PESSIMISTIC_WRITE)
+   - O usar SELECT FOR UPDATE en repositorios personalizados
+2. DTO Projection para Serialización:
+   - Crear OrderDTO para evitar la referencia circular actual
+   - Usar @JsonManagedReference o @JsonIgnore mientras tanto
+3. Event-Driven Architecture:
+   - Emitir eventos OrderCreated, StockUpdated
+   - Permite desacoplar lógica adicional (notificaciones, auditoría)
 ```

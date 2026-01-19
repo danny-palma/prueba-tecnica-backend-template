@@ -26,22 +26,20 @@ La plantilla de prueba técnica está LISTA para ser usada. Incluye:
 - ✅ Plantilla de respuestas en RESPUESTAS.md
 
 ## Información del Candidato
-- **Nombre:** 
-- **Email:** 
-- **LinkedIn:** 
-- **Fork:** 
+- **Nombre:*Maicol Yojan Antonio Rincón* 
+- **Email:* maicolrincon931@gmail.com* 
+- **LinkedIn:*https://www.linkedin.com/in/maicol-rincon-3081052a5/* 
+- **Fork: *https://github.com/MaicolRincon931/prueba-tecnica-backend-template* 
 - **Pull Request:** 
 
 ## Checklist de Entrega
-- [ ] Refactorización del método `createOrder()`
-- [ ] Implementación del descuento por variedad
-- [ ] Tests unitarios para la lógica de descuento
-- [ ] Archivo RESPUESTAS.md completado
-- [ ] README.md actualizado con decisiones de diseño
+- [x] Refactorización del método `createOrder()`
+- [x] Implementación del descuento por variedad
+- [x] Tests unitarios para la lógica de descuento
+- [x] Archivo RESPUESTAS.md completado
+- [x] README.md actualizado con decisiones de diseño
 
-## Observaciones Adicionales
-(Comentarios opcionales del candidato)
-```
+
 
 ## 🧪 Verificación Final
 
