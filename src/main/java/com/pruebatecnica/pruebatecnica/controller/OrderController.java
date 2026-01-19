@@ -14,10 +14,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    
-    @Autowired
-    private OrderService orderService;
-    
+
+    private final OrderService orderService;
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
     @PostMapping
     public ResponseEntity<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
         try {

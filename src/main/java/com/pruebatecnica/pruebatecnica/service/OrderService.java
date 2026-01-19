@@ -22,12 +22,14 @@ import java.util.Set;
 
 @Service
 public class OrderService {
-    
-    @Autowired
-    private OrderRepository orderRepository;
-    
-    @Autowired
-    private ProductRepository productRepository;
+
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+    }
     
     /**
      * NOTA IMPORTANTE: Este método viola varios principios SOLID intencionalmente.
@@ -38,78 +40,92 @@ public class OrderService {
         // TODO: Los candidatos deben refactorizar todo este método
         
         // Validaciones mezcladas con lógica de negocio
-        if (request.getCustomerName() == null || request.getCustomerName().trim().isEmpty()) {
+        validarRequest(request);
+        
+        // Crear orden
+        Order order = crearOrder(request);        List<OrderItem> orderItems = request.getItems().stream()
+                .map(item -> this.getOrderItem(item, order))
+                .toList();
+        BigDecimal total = calcularSubTotal(orderItems);
+        total = calcularDescuento(orderItems, total);
+        actualizarOrder(order,orderItems, total);
+        return orderRepository.save(order);
+    }
+    private void validarRequest(CreateOrderRequest request){
+        if (isBlank(request.getCustomerName())) {
             throw new IllegalArgumentException("Customer name is required");
         }
-        if (request.getCustomerEmail() == null || request.getCustomerEmail().trim().isEmpty()) {
+        if (isBlank(request.getCustomerEmail())) {
             throw new IllegalArgumentException("Customer email is required");
         }
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new IllegalArgumentException("Order items are required");
         }
-        
-        // Crear orden
-        Order order = new Order(request.getCustomerName(), request.getCustomerEmail());
-        List<OrderItem> orderItems = new ArrayList<>();
-        BigDecimal total = BigDecimal.ZERO;
-        Set<Long> uniqueProductIds = new HashSet<>();
-        
-        // Procesamiento de items mezclado con validación de stock
-        for (OrderItemRequest itemRequest : request.getItems()) {
-            if (itemRequest.getProductId() == null) {
-                throw new IllegalArgumentException("Product ID is required");
-            }
-            if (itemRequest.getQuantity() == null || itemRequest.getQuantity() <= 0) {
-                throw new IllegalArgumentException("Quantity must be greater than 0");
-            }
-            
-            // Buscar producto
-            Product product = productRepository.findById(itemRequest.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException(itemRequest.getProductId()));
-            
-            // Validar stock (problema de concurrencia no resuelto)
-            if (product.getStock() < itemRequest.getQuantity()) {
-                throw new InsufficientStockException(product.getName(), itemRequest.getQuantity(), product.getStock());
-            }
-            
-            // Actualizar stock
-            product.setStock(product.getStock() - itemRequest.getQuantity());
-            productRepository.save(product);
-            
-            // Crear item de orden
-            OrderItem orderItem = new OrderItem(product, itemRequest.getQuantity());
-            orderItem.setOrder(order);
-            orderItems.add(orderItem);
-            
-            // Calcular subtotal
-            BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
-            total = total.add(itemTotal);
-            
-            // Trackear productos únicos para descuento
-            uniqueProductIds.add(product.getId());
+    }
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private Order crearOrder(CreateOrderRequest request){
+        return new Order(request.getCustomerName(), request.getCustomerEmail());
+    }
+
+    private OrderItem getOrderItem(OrderItemRequest item, Order order){
+        Product product = getProduct(item.getProductId());
+        validarStock(product,item);
+        actualizarStock(product, item);
+        return crearItem(product, item, order);
+    }
+
+    private Product getProduct(Long id){
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+    }
+    private void validarStock(Product product, OrderItemRequest item){
+        if (product.getStock() < item.getQuantity()) {
+            throw new InsufficientStockException(product.getName(), item.getQuantity(), product.getStock());
         }
-        
-        // Lógica del descuento "Variedad" mezclada con todo lo demás
-        // TODO: Los candidatos deben implementar y testear esta funcionalidad
-        // Regla: Si el pedido contiene más de 3 tipos de productos diferentes, 
-        // aplicar 10% de descuento al total
-        if (uniqueProductIds.size() > 3) {
-            BigDecimal discount = total.multiply(BigDecimal.valueOf(0.10));
-            total = total.subtract(discount);
+    }
+    private void actualizarStock(Product product, OrderItemRequest item){
+        product.setStock(product.getStock() - item.getQuantity());
+        productRepository.save(product);
+    }
+    private OrderItem crearItem(Product product, OrderItemRequest itemRequest, Order order){
+        OrderItem item = new OrderItem(product, itemRequest.getQuantity());
+        item.setOrder(order);
+        return item;
+    }
+    private BigDecimal calcularSubTotal (List<OrderItem> orderItems){
+        return orderItems.stream()
+                .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Lógica del descuento "Variedad" mezclada con todo lo demás
+    // TODO: Los candidatos deben implementar y testear esta funcionalidad
+    // Regla: Si el pedido contiene más de 3 tipos de productos diferentes,
+    // aplicar 10% de descuento al total
+    private BigDecimal calcularDescuento(List<OrderItem> items, BigDecimal total){
+        long uniqueProducts = items.stream()
+                .map(item -> item.getProduct().getId())
+                .distinct()
+                .count();
+        if (uniqueProducts > 3) {
+            return total.subtract(total.multiply(BigDecimal.valueOf(0.10)));
         }
-        
-        order.setItems(orderItems);
+        return total;
+    }
+    private void actualizarOrder(Order order, List<OrderItem> items, BigDecimal total) {
+        order.setItems(items);
         order.setTotalAmount(total);
         order.setStatus(OrderStatus.CONFIRMED);
-        
-        return orderRepository.save(order);
     }
-    
+
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
     }
-    
+
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }

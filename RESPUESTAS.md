@@ -10,6 +10,9 @@ Es Black Friday y el sistema recibe 50 pedidos por segundo del iPhone 15 que sol
 
 ### Tu Respuesta
 ```
+eligiria el uso de bloqueo de base de datos por version en la arquitectura actual
+aunque si se logra cambiar la arquitectura utilizaria sistema de encolamiento asyncrono
+
 [Escribe aquí tu respuesta]
 
 Posibles enfoques a considerar:
@@ -22,6 +25,8 @@ Posibles enfoques a considerar:
 - Otros mecanismos...
 
 Explica cuál elegirías y por qué.
+eligiria el uso de bloqueo de base de datos por version en la arquitectura actual
+aunque si se logra cambiar la arquitectura utilizaria sistema de encolamiento asyncrono
 ```
 
 ---
@@ -40,6 +45,7 @@ Configurar TODAS las relaciones JPA (`@OneToMany`, `@ManyToOne`) con `FetchType.
 ### Tu Respuesta
 ```
 [Escribe aquí tu respuesta]
+No aceptaria la pull request, ya que FetchType.EAGER realiza un carga de toda la data, al inicio no podra ver reflejado el rendimiento, pero cuando crece la cantida de datos, generara los problemas de rendimiento y escalabilidad
 
 Considera estos puntos:
 - Problema N+1 vs Carga excesiva de memoria
@@ -50,6 +56,7 @@ Considera estos puntos:
 
 ¿Aceptarías la propuesta? ¿Qué alternativas sugerirías?
 ```
+No aceptaria la pull request, ya que FetchType.EAGER realiza un carga de toda la data, al inicio no podra ver reflejado el rendimiento, pero cuando crece la cantida de datos, generara los problemas de rendimiento y escalabilidad, una alternativa seria dividir la informacion en objetos o dto mas simples o pequeños y mantener la carga perezosa; 
 
 ---
 
@@ -59,13 +66,25 @@ Considera estos puntos:
 ```
 [Opcional: Explica brevemente las decisiones más importantes que tomaste durante la refactorización]
 ```
-
+Durante el refactoring tome la decision de dividir el metodo en mas pequeños, con responsabilidad unica, implementando streams,  
 ### Patrones de Diseño Aplicados
 ```
 [Opcional: Menciona qué patrones de diseño utilizaste y por qué]
 ```
-
+No utilice ningun patron de diseño, ya que adicione la dependencias, pero al momento de compilar me generaba errores
 ### Posibles Mejoras Futuras
 ```
 [Opcional: ¿Qué otras mejoras implementarías si tuvieras más tiempo?]
 ```
+Implementacion restControllerAdvice para manejo de excepciones
+Implementacion de exception mas personalizadas para el manejo de exceptiones
+Creacion de clase utils para el manejo de errores en las validaciones de los request
+Creacion de Binding results o validations constrain para validacion de request
+Implementacion de records en los request de los controllers
+Implementacion patrones Builder, para la creacion de los objetos mappers
+Implementacion de Mappers para la generacion de objetos
+Implementacion de contratos o interfaces de clases service
+Implementacion de paquetes para organizar las capas de dominio, infraestructura y aplicacion
+Implementacion de documentacion como swagger u otros
+Implementacion de Logs y checks de salud de la aplicacion
+
