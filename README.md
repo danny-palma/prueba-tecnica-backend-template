@@ -91,6 +91,31 @@ Realiza un Fork del repositorio de la plantilla a tu cuenta personal.
 
 ### 3. **Documentación**
 - ✅ Edita este README.md explicando brevemente tus **decisiones de diseño**
+
+Al revisar el método "createOrder" se observó que:
+- Tenía mucha lógica mezclada en un solo método (validación de stock, creación de la orden, persistencia de ítems, cálculo de totales),
+que obviamente viola los principios SOLID.
+- Había dependencia directa de las entidades JPA en la capa de servicio.
+- Había dificultad para probar y mantener el código, porque todo estaba acoplado.
+
+En cuanto a las "DECISIONES DE DISEÑO", ee tomó la decisión de dividir el método en servicios especializados, con el fin de lograr código limpio y una arquitectura más mantenible, ajustándose de la siguiente manera:
+*Se crea el componente OrderValidator, el cual pertenece a la lógica de negocio, y su responsabilidad es la de validar reglas y datos de entrada (campos de la orden y campos de los items de la orden). Por lo tanto se ubicó en el paquete service y se creó el subpaquete service/validator para mantener orden.
+*También se crea el componente OrderCalculator, el cual es un componente que encapsula reglas de negocio (en nuestro caso cálculo de totales, descuentos), también pertenece a la capa service, pero separado de los servicios transaccionales. Por lo tanto se ubicó en el paquete service y se creó el subpaquete service/business.
+Con esto, las clases OrderValidator y OrderCalculator se integran naturalmente en la capa service, pero organizadas en subpaquetes para mantener un código limpio y modular.
+*En ProductService se agregó el método "validateAndUpdateStock" para validar y actualizar el stock de productos correctamente.
+*y Finalmente en OrderService el método "createOrder" se ajusta quedando mucho más limpio porque delega toda la lógica a los anteriores componentes, dejando que haga toda la orquestación: 1-valida request, 2-valida productos y stock, 3-crea la orden, 4-calculo de total y regla descuento, 5-persiste la orden.
+
+Cuáles fueron los beneficios del refactor en cuanto a SOLID?:
+- SRP (Single Responsibility Principle): cada clase tiene una responsabilidad clara.
+- OCP (Open/Closed Principle): puedes extender validaciones o reglas de descuento sin modificar el núcleo.
+- DIP (Dependency Inversion Principle): OrderService depende de abstracciones (OrderRepository, ProductService, etc.), no de detalles.
+- Clean Code: el método createOrder ahora es corto, legible, mantenible y fácil de probar.
+Cuáles fueron los beneficios del refactor de forma general en cuanto a la organización?:
+- Claridad: cada clase tiene un lugar lógico dentro de la arquitectura.
+- Escalabilidad: si mañana se tienen que agregar más validadores o calculadoras, ya se tienen carpetas dedicadas.
+- Mantenibilidad: el OrderService queda limpio y solo orquesta, mientras que las reglas específicas viven en sus propios componentes.
+Con esta refactorización, el código quedó modular, testeable y preparado para crecer sin convertirse en un “monolito” dentro de un solo método.
+
 - ✅ Crea **RESPUESTAS.md** con las respuestas a las preguntas
 
 ### 4. **Pull Request**
